@@ -4,10 +4,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
-#---
-# carregar dados que serão utilizados
-diarios = pd.read_csv('diarios.csv')
-semanais = pd.read_csv('semanais.csv')
+
 
 
 #--- gráficos

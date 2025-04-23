@@ -1,9 +1,13 @@
 import streamlit as st
 import pandas as pd
-
+import streamlit_shadcn_ui as ui
 import graficos 
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="ClimaDengue - Base dos Dados",
+    page_icon=":mosquito:",
+    layout="wide"
+    )
 
 st.image("banner.png")
 st.write("Este dashboard permite que você naveque pelos dados de notificações de casos de dengue do SINAN e de temperatura e precipitação de estações automáticas do INMET. \n A maioria dos dados utilizados aqui estão disponíveis no data lake da Base dos Dados")
@@ -13,17 +17,50 @@ st.write("Este dashboard permite que você naveque pelos dados de notificações
 # carregar dados que serão utilizados
 diarios = pd.read_csv('diarios.csv')
 semanais = pd.read_csv('semanais.csv')
+populacao = pd.read_csv('populacao.csv')
 
 
 #---
 # selecionar cidade
-st.selectbox('Selecione a capital',semanais['cidade'].sort_values().unique())
+cidade = st.selectbox('Selecione a capital',semanais['cidade'].sort_values().unique())
 
+
+#---
+# filtrar e combinar os dados conforme necessidade
+dados_diarios = diarios[diarios['cidade']==cidade]
+dados_semanais = semanais[semanais['cidade']==cidade]
+function_dict = {'temperatura_media':'mean','precipitacao':'sum','casos':'sum'}
+dados_mensais = dados_diarios.groupby(by=['cidade','ano','mes']).aggregate(function_dict).reset_index()
+dados_mensais = dados_mensais[dados_mensais['cidade']==cidade]
+pop = populacao[populacao['cidade']==cidade]
+dados_anuais = dados_mensais.groupby(by='ano').aggregate(function_dict).reset_index()
+
+dados_semanais = dados_semanais.merge(pop,left_on='ano',right_on='ano')
+dados_semanais['casos_100k'] = dados_semanais['casos']/dados_semanais['população']*100000
+dados_mensais = dados_mensais.merge(pop,left_on='ano',right_on='ano')
+dados_mensais['casos_100k'] = dados_mensais['casos']/dados_mensais['população']*100000
+
+casos_totais = dados_mensais['casos'].sum()
+ano_mais_casos = int(dados_anuais.loc[dados_anuais['casos']==dados_anuais['casos'].max(),'ano'].values[0])
+print(ano_mais_casos)
 #--- 
 # criar as tabs
-dengue, clima, climadengue = st.tabs(["Dengue","Clima e tempo","ClimaDengue"])
+dengue, clima, climadengue = st.tabs(["Dengue","Clima e tempo","Clima e Dengue"])
 
 #--- 
+# tab1: DENGUE
+# aqui ficarão: heatmap de casos por semana epidemiológica, casos por mês ao longo dos últimos 10 anos, casos por 100mil habitantes, por mês, ao longo dos últimos 10 anos.
+with dengue:
+    col_card1, col_card2, col_heatmap = st.columns([1,1,3])
+    col_casos_absolutos = st.columns(1)
+    col_casos_100k = st.columns(1)
+
+with col_card1:
+    ui.metric_card(title='Total de casos',content=casos_totais,description='nos últimos dez anos')
+with col_card2:
+    ui.metric_card(title='Ano com mais casos',content=ano_mais_casos,description='nos últimos dez anos')
+
+
 #criar uma seleção na barral ateral do dashboard
 #cidade = st.sidebar.selectbox('Capital',semanais['cidade'].unique())
 #ano = st.sidebar.selectbox('Ano',semanais['ano'].unique())
