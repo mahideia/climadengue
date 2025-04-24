@@ -63,16 +63,16 @@ with dengue:
     col_casos_absolutos = st.columns(1)[0]
     #col_casos_100k = st.columns(1)
 
-with col_card1:
-    ui.metric_card(title='Total de casos',content=casos_totais,description='nos últimos dez anos')
-with col_card2:
-    ui.metric_card(title='Ano com mais casos',content=ano_mais_casos,description='nos últimos dez anos')
-with col_texto:
-    st.markdown("<p style='padding-top:10px'></p>", unsafe_allow_html=True)
-    st.markdown("""
-                Os dados utilizados para o desenvolvimento destas visualizações estão disponíveis no dataset [SINAN na Base dos Dados](https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a?table=9bdbca38-d97f-47fa-b422-84477a6b68c8). 
-                Dados de população das capitais são das projeções disponíveis do Ministério da Saúde, acessados pelo [Tabnet](http://tabnet.datasus.gov.br/cgi/tabcgi.exe?ibge/cnv/projpop2024uf.def).
-                """)
+#with col_card1:
+#    ui.metric_card(title='Total de casos',content=casos_totais,description='nos últimos dez anos')
+#with col_card2:
+#    ui.metric_card(title='Ano com mais casos',content=ano_mais_casos,description='nos últimos dez anos')
+#with col_texto:
+#    st.markdown("<p style='padding-top:10px'></p>", unsafe_allow_html=True)
+#    st.markdown("""
+#                Os dados utilizados para o desenvolvimento destas visualizações estão disponíveis no dataset [SINAN na Base dos Dados](https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a?table=9bdbca38-d97f-47fa-b422-84477a6b68c8). 
+#                Dados de população das capitais são das projeções disponíveis do Ministério da Saúde, acessados pelo [Tabnet](http://tabnet.datasus.gov.br/cgi/tabcgi.exe?ibge/cnv/projpop2024uf.def).
+#                """)
 
 with col_heatmap:
     pivot_semanais = pd.pivot_table(dados_semanais,values='casos_100k',index=['ano'],columns=['semana'],aggfunc='sum', fill_value=0)
