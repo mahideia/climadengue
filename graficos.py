@@ -8,20 +8,63 @@ import plotly.express as px
 #--- gráficos
 
 #heatmap
-def heatmap(dados):
+def heatmap(dados,cor,titulo):
     fig_heatmap = px.imshow(dados, text_auto=True,
-                            color_continuous_scale='Reds', 
+                            color_continuous_scale=cor, 
                             aspect="auto")
     fig_heatmap.update_layout(xaxis={'side':'bottom'})
     fig_heatmap.update_layout(yaxis={'tickmode':'linear'})
     fig_heatmap.update_xaxes(title_text="Semana epidemiológica")
     fig_heatmap.update_yaxes(title_text="")
-    fig_heatmap.update_layout(title_text=f"Casos por 100 mil habitantes")
+    fig_heatmap.update_layout(title_text=titulo)
     #fig_heatmap.update_layout(annotations=[dict(text='Sinan', xanchor='right',yanchor='bottom',x=0,y=0,showarrow=False)])
     return fig_heatmap
 
+#casos absolutos de dengue na capital escolhida
+def casos_absolutos(dados):
+    dados['data'] = pd.to_datetime(dados['ano'].astype(str) + '-' + dados['mes'].astype(str), format='%Y-%m')
+    fig_casos = go.Figure()
+    fig_casos.add_trace(
+        go.Bar(x=dados['data'],y=dados['casos'],marker_color='darkgreen')
+    )
+    fig_casos.update_xaxes(title_text="")
+    fig_casos.update_yaxes(title_text="Notificações")
+    fig_casos.update_layout(title_text=f"Casos de Dengue")
+    #fig_casos.update_layout(xaxis={'tickmode':'linear'})
+    fig_casos.update_layout(plot_bgcolor='white')
+    return fig_casos    
 
+def linha_tempo(dados,variavel,cor,titulo,xlabel):
+    dados['data'] = pd.to_datetime(dados['ano'].astype(str) + '-' + dados['mes'].astype(str), format='%Y-%m')
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(x=dados['data'],y=dados[variavel],marker_color=cor)
+    )
+    fig.update_xaxes(title_text="")
+    fig.update_yaxes(title_text=xlabel)
+    fig.update_layout(title_text=titulo)
+    #fig_casos.update_layout(xaxis={'tickmode':'linear'})
+    fig.update_layout(plot_bgcolor='white')
+    return fig
 
+def casos_tempo(dados,variavel,cor_casos,cor_variavel,titulo,label_variavel):
+    dados['data'] = pd.to_datetime(dados['ano'].astype(str) + '-' + dados['mes'].astype(str), format='%Y-%m')
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Bar(x=dados['data'], y=dados['casos'], name="Notificações",marker_color=cor_casos),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(x=dados['data'], y=dados[variavel], name=label_variavel, marker_color=cor_variavel),
+        secondary_y=True,
+    )
+    fig.update_layout(title_text=titulo)
+    fig.update_xaxes(title_text="")
+    fig.update_yaxes(title_text='Notificações', secondary_y=False)
+    fig.update_yaxes(title_text=label_variavel, secondary_y=True)
+    fig.update_layout(plot_bgcolor='white')
+    #fig_temp_casos.update_layout(yaxis2={'rangemode':'tozero'})
+    return fig
 
 #climograma
 def climograma(dados_mensais):
@@ -43,19 +86,6 @@ def climograma(dados_mensais):
     fig_climograma.update_layout(yaxis2={'rangemode':'tozero'})
     return fig_climograma
 
-#casos absolutos de dengue na capital escolhida
-def casos_absolutos(dados):
-    dados['data'] = pd.to_datetime(dados['ano'].astype(str) + '-' + dados['mes'].astype(str), format='%Y-%m')
-    fig_casos = go.Figure()
-    fig_casos.add_trace(
-        go.Bar(x=dados['data'],y=dados['casos'],marker_color='darkred')
-    )
-    fig_casos.update_xaxes(title_text="")
-    fig_casos.update_yaxes(title_text="Notificações")
-    fig_casos.update_layout(title_text=f"Casos de Dengue")
-    #fig_casos.update_layout(xaxis={'tickmode':'linear'})
-    fig_casos.update_layout(plot_bgcolor='white')
-    return fig_casos    
 
 
 #casos por mês

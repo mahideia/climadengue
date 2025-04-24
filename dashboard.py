@@ -53,11 +53,10 @@ ano_mais_casos = int(dados_anuais.loc[dados_anuais['casos']==dados_anuais['casos
 print(ano_mais_casos)
 #--- 
 # criar as tabs
-dengue, clima, climadengue = st.tabs(["Dengue","Clima e tempo","Clima e Dengue"])
+dengue, temperatura, precipitacao, climadengue = st.tabs(["Dengue","Temperatura","Precipitação","Clima e Dengue"])
 
 #--- 
 # tab1: DENGUE
-# aqui ficarão: heatmap de casos por semana epidemiológica, casos por mês ao longo dos últimos 10 anos, casos por 100mil habitantes, por mês, ao longo dos últimos 10 anos.
 with dengue:
     col_card1, col_card2, col_texto = st.columns([1,1,3])
     col_heatmap = st.columns(1)[0]
@@ -72,38 +71,51 @@ with col_texto:
     st.markdown("<p style='padding-top:10px'></p>", unsafe_allow_html=True)
     st.markdown("""
                 Os dados utilizados para o desenvolvimento destas visualizações estão disponíveis no dataset [SINAN na Base dos Dados](https://basedosdados.org/dataset/f51134c2-5ab9-4bbc-882f-f1034603147a?table=9bdbca38-d97f-47fa-b422-84477a6b68c8). 
-                Dados de população das capitais são das projeções disponíveis do Ministério da Saúde, acessados pelo [Tabnet](http://tabnet.datasus.gov.br/cgi/tabcgi.exe?ibge/cnv/projpop2024uf.def)
+                Dados de população das capitais são das projeções disponíveis do Ministério da Saúde, acessados pelo [Tabnet](http://tabnet.datasus.gov.br/cgi/tabcgi.exe?ibge/cnv/projpop2024uf.def).
                 """)
 
 with col_heatmap:
     pivot_semanais = pd.pivot_table(dados_semanais,values='casos_100k',index=['ano'],columns=['semana'],aggfunc='sum', fill_value=0)
-    st.plotly_chart(graficos.heatmap(pivot_semanais), use_container_width=False)
+    st.plotly_chart(graficos.heatmap(pivot_semanais,'Greens',"Casos por 100 mil habitantes"), use_container_width=False)
 
 with col_casos_absolutos:
     st.plotly_chart(graficos.casos_absolutos(dados_mensais))
 
-#criar uma seleção na barral ateral do dashboard
-#cidade = st.sidebar.selectbox('Capital',semanais['cidade'].unique())
-#ano = st.sidebar.selectbox('Ano',semanais['ano'].unique())
+# tab2: temperatura
+with temperatura:
+    col_heatmap_temp = st.columns(1)[0]
+    col_linha_temp = st.columns(1)[0]
+    
+with col_heatmap_temp:
+    pivot_semanais = pd.pivot_table(dados_semanais,values='temperatura_media',index='ano',columns='semana',aggfunc='mean')
+    pivot_semanais = round(pivot_semanais,1)
+    st.plotly_chart(graficos.heatmap(pivot_semanais,'Reds','Temperatura média na semana (°C)'))
 
-#filtrar dados considerando as seleções
-#dados_diarios = diarios[(diarios['ano']==ano) & (diarios['cidade']==cidade)]
-#dados_semanais = semanais[(semanais['ano']==ano)&(semanais['cidade']==cidade)]
-#function_dict = {'temperatura_media':'mean','precipitacao':'sum','casos':'sum'}
-#dados_mensais = dados_diarios.groupby(by=['cidade','ano','mes']).aggregate(function_dict).reset_index()
-
-
-#-- layout?
-#l1_c1, l1_c2 = st.columns(2)  # Primeira linha com duas colunas
-#l2_c1 = st.columns(1)  # Segunda linha com três colunas
-#l3_c1 = st.columns(1)  # terceira  linha com três colunas?
+with col_linha_temp:
+    st.plotly_chart(graficos.linha_tempo(dados_mensais,'temperatura_media','darkred','Temperatura média mensal','Temperatura (°C)'))
 
 
+#tab3: Precipitação
+with precipitacao:
+    col_heatmap_precip = st.columns(1)[0]
+    col_linha_precip = st.columns(1)[0]
+
+with col_heatmap_precip:
+    pivot_semanais = pd.pivot_table(dados_semanais,values='precipitacao',index='ano',columns='semana',aggfunc='sum')
+    pivot_semanais = round(pivot_semanais)
+    st.plotly_chart(graficos.heatmap(pivot_semanais,'Blues','Precipitação total (mm)'))
+
+with col_linha_precip:
+    st.plotly_chart(graficos.linha_tempo(dados_mensais,'precipitacao','darkblue','Precipitação total mensal','Precipitação (mm)'))
 
 
-#---
-#exibir os gráficos nos lugares certos
-#l1_c1.plotly_chart(graficos.climograma(dados_mensais), use_container_width=True)
-#l1_c2.plotly_chart(graficos.casos(dados_mensais), use_container_width=True)
-#l2_c1[0].plotly_chart(graficos.temp_casos(dados_semanais), use_container_width=True)
-#l3_c1[0].plotly_chart(graficos.precip_casos(dados_semanais), use_container_width=True)
+#tab4: climadengue
+with climadengue:
+    col_casos_temperatura = st.columns(1)[0]
+    col_casos_precipitacao = st.columns(1)[0]
+
+with col_casos_temperatura:
+    st.plotly_chart(graficos.casos_tempo(dados_mensais,'temperatura_media','darkgreen','red','Notificações e Temperatura média por mês','Temperatura (°C)'))
+
+with col_casos_precipitacao:
+    st.plotly_chart(graficos.casos_tempo(dados_mensais,'precipitacao','darkgreen','blue','Notificações e Precipitação total por mês','Precipitação (mm)'))
