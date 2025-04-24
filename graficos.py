@@ -2,12 +2,27 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
-
-
+import plotly.express as px
 
 
 #--- gráficos
+
+#heatmap
+def heatmap(dados):
+    fig_heatmap = px.imshow(dados, text_auto=True,
+                            color_continuous_scale='Reds', 
+                            aspect="auto")
+    fig_heatmap.update_layout(xaxis={'side':'bottom'})
+    fig_heatmap.update_layout(yaxis={'tickmode':'linear'})
+    fig_heatmap.update_xaxes(title_text="Semana epidemiológica")
+    fig_heatmap.update_yaxes(title_text="")
+    fig_heatmap.update_layout(title_text=f"Casos por 100 mil habitantes")
+    #fig_heatmap.update_layout(annotations=[dict(text='Sinan', xanchor='right',yanchor='bottom',x=0,y=0,showarrow=False)])
+    return fig_heatmap
+
+
+
+
 #climograma
 def climograma(dados_mensais):
     fig_climograma = make_subplots(specs=[[{"secondary_y": True}]])
@@ -27,6 +42,21 @@ def climograma(dados_mensais):
     fig_climograma.update_layout(xaxis={'tickmode':'linear'})
     fig_climograma.update_layout(yaxis2={'rangemode':'tozero'})
     return fig_climograma
+
+#casos absolutos de dengue na capital escolhida
+def casos_absolutos(dados):
+    dados['data'] = pd.to_datetime(dados['ano'].astype(str) + '-' + dados['mes'].astype(str), format='%Y-%m')
+    fig_casos = go.Figure()
+    fig_casos.add_trace(
+        go.Bar(x=dados['data'],y=dados['casos'],marker_color='darkred')
+    )
+    fig_casos.update_xaxes(title_text="")
+    fig_casos.update_yaxes(title_text="Notificações")
+    fig_casos.update_layout(title_text=f"Casos de Dengue")
+    #fig_casos.update_layout(xaxis={'tickmode':'linear'})
+    fig_casos.update_layout(plot_bgcolor='white')
+    return fig_casos    
+
 
 #casos por mês
 def casos(dados_mensais):
